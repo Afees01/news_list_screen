@@ -1,0 +1,25 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_list_screen/bloc/news_bloc.dart';
+import 'package:news_list_screen/data/repository/news_repository.dart';
+import 'package:news_list_screen/data/services/api_service.dart';
+import 'package:news_list_screen/ui/news_screen.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: BlocProvider(
+        create: (_) => NewsBloc(
+          NewsRepository(ApiService()),
+        ),
+        child: NewsScreen(),
+      ),
+    );
+  }
+}
