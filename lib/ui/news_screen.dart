@@ -11,37 +11,108 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> {
-  final ScrollController _scrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
-
-    context.read<NewsBloc>().add(FetchNews());
-
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        context.read<NewsBloc>().add(FetchMoreNews());
-      }
-    });
+    context.read<NewsBloc>().add(FetchNews(page: 1));
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+  Widget _buildPaginationBar(BuildContext context, int currentPage) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F0F1E),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.05),
+            width: 1,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: true,
+        top: false,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: List.generate(10, (index) {
+              final pageNum = index + 1;
+              final isSelected = currentPage == pageNum;
+              return GestureDetector(
+                onTap: () {
+                  if (!isSelected) {
+                    context.read<NewsBloc>().add(FetchNews(page: pageNum));
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.only(right: 12),
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF667EEA),
+                              Color(0xFF764BA2),
+                            ],
+                          )
+                        : null,
+                    color: isSelected ? null : Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF00D4FF).withOpacity(0.5)
+                          : Colors.transparent,
+                      width: isSelected ? 1.5 : 0,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF667EEA).withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: Text(
+                    '$pageNum',
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[400],
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0F0F1E),
+      backgroundColor: const Color(0xFF0F0F1E),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(110),
+        preferredSize: const Size.fromHeight(110),
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
@@ -51,9 +122,9 @@ class _NewsScreenState extends State<NewsScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Color(0xFF667EEA).withOpacity(0.4),
+                color: const Color(0xFF667EEA).withOpacity(0.4),
                 blurRadius: 24,
-                offset: Offset(0, 12),
+                offset: const Offset(0, 12),
               ),
             ],
           ),
@@ -61,7 +132,7 @@ class _NewsScreenState extends State<NewsScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Padding(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                   left: 20,
                   right: 20,
                   top: 16,
@@ -73,7 +144,7 @@ class _NewsScreenState extends State<NewsScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Latest News',
                           style: TextStyle(
                             fontSize: 28,
@@ -82,7 +153,7 @@ class _NewsScreenState extends State<NewsScreen> {
                             letterSpacing: -0.5,
                           ),
                         ),
-                        SizedBox(height: 6),
+                        const SizedBox(height: 6),
                         Text(
                           'Tap any story to explore',
                           style: TextStyle(
@@ -94,7 +165,7 @@ class _NewsScreenState extends State<NewsScreen> {
                       ],
                     ),
                     Container(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
@@ -109,7 +180,7 @@ class _NewsScreenState extends State<NewsScreen> {
                           ),
                         ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.notifications_none_rounded,
                         color: Colors.white,
                         size: 20,
@@ -125,43 +196,11 @@ class _NewsScreenState extends State<NewsScreen> {
       body: BlocBuilder<NewsBloc, NewsState>(
         builder: (context, state) {
           if (state is NewsLoading) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF667EEA).withOpacity(0.15),
-                          Color(0xFF764BA2).withOpacity(0.15),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Color(0xFF667EEA).withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation(
-                        Color(0xFF667EEA),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading news...',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+            return ListView.builder(
+              itemCount: 6,
+              itemBuilder: (context, index) {
+                return const _ShimmerNewsTile();
+              },
             );
           }
 
@@ -171,28 +210,28 @@ class _NewsScreenState extends State<NewsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Color(0xFFFF6B6B).withOpacity(0.15),
-                          Color(0xFFEE5A6F).withOpacity(0.15),
+                          const Color(0xFFFF6B6B).withOpacity(0.15),
+                          const Color(0xFFEE5A6F).withOpacity(0.15),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Color(0xFFFF6B6B).withOpacity(0.3),
+                        color: const Color(0xFFFF6B6B).withOpacity(0.3),
                         width: 1,
                       ),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.error_outline_rounded,
                       size: 48,
                       color: Color(0xFFFF6B6B),
                     ),
                   ),
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Something went wrong',
                     style: TextStyle(
                       fontSize: 16,
@@ -200,7 +239,7 @@ class _NewsScreenState extends State<NewsScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     state.message,
                     textAlign: TextAlign.center,
@@ -209,10 +248,10 @@ class _NewsScreenState extends State<NewsScreen> {
                       color: Colors.grey[400],
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
                           Color(0xFF667EEA),
                           Color(0xFF764BA2),
@@ -221,9 +260,9 @@ class _NewsScreenState extends State<NewsScreen> {
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFF667EEA).withOpacity(0.5),
+                          color: const Color(0xFF667EEA).withOpacity(0.5),
                           blurRadius: 12,
-                          offset: Offset(0, 6),
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
@@ -231,10 +270,11 @@ class _NewsScreenState extends State<NewsScreen> {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          context.read<NewsBloc>().add(FetchNews());
+                          // Try page 1 again
+                          context.read<NewsBloc>().add(FetchNews(page: 1));
                         },
                         borderRadius: BorderRadius.circular(10),
-                        child: Padding(
+                        child: const Padding(
                           padding: EdgeInsets.symmetric(
                             horizontal: 28,
                             vertical: 14,
@@ -264,75 +304,133 @@ class _NewsScreenState extends State<NewsScreen> {
           }
 
           if (state is NewsLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<NewsBloc>().add(RefreshNews());
-              },
-              color: Color(0xFF667EEA),
-              backgroundColor: Color(0xFF1A1A2E),
-              strokeWidth: 2.5,
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: state.news.length + 1,
-                itemBuilder: (context, index) {
-                  if (index < state.news.length) {
-                    return NewsTile(news: state.news[index]);
-                  } else {
-                    return state.isLoadingMore
-                        ? Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 24,
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF667EEA).withOpacity(0.15),
-                                        Color(0xFF764BA2).withOpacity(0.15),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Color(0xFF667EEA).withOpacity(0.2),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: SizedBox(
-                                    width: 32,
-                                    height: 32,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation(
-                                        Color(0xFF667EEA),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 12),
-                                Text(
-                                  'Loading more stories...',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[400],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : SizedBox(height: 16);
-                  }
-                },
-              ),
+            return Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context
+                          .read<NewsBloc>()
+                          .add(RefreshNews(page: state.currentPage));
+                    },
+                    color: const Color(0xFF667EEA),
+                    backgroundColor: const Color(0xFF1A1A2E),
+                    strokeWidth: 2.5,
+                    child: ListView.builder(
+                      itemCount: state.news.length,
+                      itemBuilder: (context, index) {
+                        return NewsTile(news: state.news[index]);
+                      },
+                    ),
+                  ),
+                ),
+                _buildPaginationBar(context, state.currentPage),
+              ],
             );
           }
 
-          return SizedBox();
+          return const SizedBox();
         },
       ),
+    );
+  }
+}
+
+// Awesome Custom Shimmer Widget for Interview Assessment requirement
+class _ShimmerNewsTile extends StatefulWidget {
+  const _ShimmerNewsTile();
+
+  @override
+  State<_ShimmerNewsTile> createState() => _ShimmerNewsTileState();
+}
+
+class _ShimmerNewsTileState extends State<_ShimmerNewsTile>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.2, end: 0.6).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: const Color(0xFF1A1A2E).withOpacity(_animation.value),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.02),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withOpacity(_animation.value * 0.2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(_animation.value * 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 14,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(_animation.value * 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 12,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(_animation.value * 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

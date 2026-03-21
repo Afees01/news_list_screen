@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_list_screen/bloc/news_bloc.dart';
 import 'package:news_list_screen/data/repository/news_repository.dart';
 import 'package:news_list_screen/data/services/api_service.dart';
-import 'package:news_list_screen/ui/news_screen.dart';
+import 'package:news_list_screen/ui/splash_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,13 +12,16 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: BlocProvider(
-        create: (_) => NewsBloc(
-          NewsRepository(ApiService()),
+    return BlocProvider(
+      create: (_) => NewsBloc(
+        NewsRepository(ApiService()),
+      ),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
         ),
-        child: NewsScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

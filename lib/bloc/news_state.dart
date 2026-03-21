@@ -8,13 +8,11 @@ class NewsLoading extends NewsState {}
 
 class NewsLoaded extends NewsState {
   final List<NewsModel> news;
-  final bool hasMore;
-  final bool isLoadingMore;
+  final int currentPage;
 
   NewsLoaded({
     required this.news,
-    this.hasMore = true,
-    this.isLoadingMore = false,
+    this.currentPage = 1,
   });
 }
 
