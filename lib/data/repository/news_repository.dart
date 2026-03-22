@@ -22,7 +22,6 @@ class NewsRepository {
         allCached = decoded.map((e) => NewsModel.fromJson(e)).toList();
       }
 
-      // Merge new articles into the existing cache incrementally (no duplicates)
       final Set<String> existingTitles = allCached.map((e) => e.title).toSet();
       for (var item in news) {
         if (!existingTitles.contains(item.title)) {
@@ -30,7 +29,6 @@ class NewsRepository {
         }
       }
 
-      // Save the completely cumulative data
       prefs.setString(
         'cached_news',
         jsonEncode(allCached.map((e) => e.toJson()).toList()),

@@ -91,7 +91,8 @@ class _NewsScreenState extends State<NewsScreen> {
                     '$pageNum',
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey[400],
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w600,
                       fontSize: 16,
                     ),
                   ),
@@ -196,10 +197,28 @@ class _NewsScreenState extends State<NewsScreen> {
       body: BlocBuilder<NewsBloc, NewsState>(
         builder: (context, state) {
           if (state is NewsLoading) {
-            return ListView.builder(
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return const _ShimmerNewsTile();
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 600) {
+                  return GridView.builder(
+                    padding: const EdgeInsets.only(top: 8),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: constraints.maxWidth > 900 ? 3 : 2,
+                      mainAxisExtent: 140,
+                    ),
+                    itemCount: 9, // More shimmers for larger screens
+                    itemBuilder: (context, index) {
+                      return const _ShimmerNewsTile();
+                    },
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: 8),
+                  itemCount: 6,
+                  itemBuilder: (context, index) {
+                    return const _ShimmerNewsTile();
+                  },
+                );
               },
             );
           }
@@ -316,12 +335,87 @@ class _NewsScreenState extends State<NewsScreen> {
                     color: const Color(0xFF667EEA),
                     backgroundColor: const Color(0xFF1A1A2E),
                     strokeWidth: 2.5,
-                    child: ListView.builder(
-                      itemCount: state.news.length,
-                      itemBuilder: (context, index) {
-                        return NewsTile(news: state.news[index]);
-                      },
-                    ),
+                    child: state.news.isEmpty
+                        ? LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(32.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(24),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white
+                                                  .withOpacity(0.05),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.inbox_rounded,
+                                              size: 48,
+                                              color: Colors.white54,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                          const Text(
+                                            'No News Found',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'There is no data available for this page.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (constraints.maxWidth > 600) {
+                                return GridView.builder(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        constraints.maxWidth > 900 ? 3 : 2,
+                                    mainAxisExtent: 140,
+                                  ),
+                                  itemCount: state.news.length,
+                                  itemBuilder: (context, index) {
+                                    return NewsTile(news: state.news[index]);
+                                  },
+                                );
+                              }
+                              return ListView.builder(
+                                padding: const EdgeInsets.only(top: 8),
+                                itemCount: state.news.length,
+                                itemBuilder: (context, index) {
+                                  return NewsTile(news: state.news[index]);
+                                },
+                              );
+                            },
+                          ),
                   ),
                 ),
                 _buildPaginationBar(context, state.currentPage),
